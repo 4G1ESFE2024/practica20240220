@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Practica20240220.Models;
 
@@ -10,9 +11,10 @@ using Practica20240220.Models;
 namespace Practica20240220.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240227153028_migracion20240227930")]
+    partial class migracion20240227930
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,9 +33,6 @@ namespace Practica20240220.Migrations
 
                     b.Property<string>("Apellido")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Comentario")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")

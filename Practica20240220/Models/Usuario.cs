@@ -33,5 +33,6 @@ namespace Practica20240220.Models
         public string ConfirmarPassword { get; set; }
         [NotMapped]
         public int Take { get; set; }
+        public string? Comentario { get; set; }
     }
 }

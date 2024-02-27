@@ -113,7 +113,7 @@ namespace Practica20240220.Controllers
         [Authorize(Roles = "Administrador")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Nombre,Apellido,Email,Password,Estatus,Rol")] Usuario usuario)
+        public async Task<IActionResult> Create([Bind("Id,Nombre,Apellido,Email,Password,Estatus,Rol,Comentario")] Usuario usuario)
         {
             usuario.Password = CalcularHashMD5(usuario.Password);
             _context.Add(usuario);
@@ -143,7 +143,7 @@ namespace Practica20240220.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,Email,Rol,Estatus")] Usuario usuario)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,Email,Rol,Estatus,Comentario")] Usuario usuario)
         {
             if (id != usuario.Id)
             {
@@ -158,6 +158,7 @@ namespace Practica20240220.Controllers
                 usuarioData.Email = usuario.Email;
                 usuarioData.Estatus = usuario.Estatus;
                 usuarioData.Rol = usuario.Rol;
+                usuarioData.Comentario = usuario.Comentario;
                 _context.Update(usuarioData);
                 await _context.SaveChangesAsync();
             }
