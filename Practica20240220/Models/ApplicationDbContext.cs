@@ -12,7 +12,7 @@ namespace Practica20240220.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Usuario>().HasData(
-                new Usuario { Email = "root@gmail.com", Id = 1, Nombre="root", Apellido="admin", Estatus=1, Rol= "Administrador",Password= "e10adc3949ba59abbe56e057f20f883e" }               
+                new Usuario { Email = "root@gmail.com", Id = 1, Nombre="root", Apellido="admin", Estatus=1, Rol= "Administrador",Password= "e10adc3949ba59abbe56e057f20f883e" } // Password por defecto es 123456               
             );
         }
     }

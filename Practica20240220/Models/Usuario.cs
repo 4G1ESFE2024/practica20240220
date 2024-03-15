@@ -34,5 +34,10 @@ namespace Practica20240220.Models
         [NotMapped]
         public int Take { get; set; }
         public string? Comentario { get; set; }
+        /// <summary>
+        /// 1= Sin Validar
+        /// 2= Valido
+        /// </summary>
+        public byte ValidEmail { get; set; } = 1;
     }
 }

@@ -19,10 +19,12 @@ namespace Practica20240220.Controllers
     public class UsuariosController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly SendEmail _sendEmail;
 
-        public UsuariosController(ApplicationDbContext context)
+        public UsuariosController(ApplicationDbContext context,SendEmail sendEmail)
         {
             _context = context;
+            _sendEmail= sendEmail;
         }
 
         // GET: Usuarios
@@ -116,9 +118,25 @@ namespace Practica20240220.Controllers
         public async Task<IActionResult> Create([Bind("Id,Nombre,Apellido,Email,Password,Estatus,Rol,Comentario")] Usuario usuario)
         {
             usuario.Password = CalcularHashMD5(usuario.Password);
+
             _context.Add(usuario);
-            await _context.SaveChangesAsync();
+          
+            int result =await _context.SaveChangesAsync();
+            if (result > 0)
+            {
+                var absoluteUrl = Url.Action("ValidEmail", "Usuarios", new {id= usuario.Id }, Request.Scheme);
+                await _sendEmail.Send(usuario.Email, "Validar Email", "Por favor ingresar el siguiente codigo para validar el correo <br><a href="+ absoluteUrl + ">Ir a validar</a>");
+            }
             return RedirectToAction(nameof(Index));         
+        }
+        [AllowAnonymous]
+        public async Task<IActionResult> ValidEmail(int id)
+        {           
+            var usuario = await _context.Usuarios.FindAsync(id);
+            usuario.ValidEmail = 2;
+            _context.Update(usuario);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index", "Home");
         }
         [Authorize(Roles = "Administrador")]
         // GET: Usuarios/Edit/5
@@ -136,7 +154,6 @@ namespace Practica20240220.Controllers
             }
             return View(usuario);
         }
-
         // POST: Usuarios/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -173,8 +190,94 @@ namespace Practica20240220.Controllers
                     throw;
                 }
             }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index));          
+        }
+        [Authorize]
+        public async Task<IActionResult> CambiarPassword()
+        {
+            int id = int.Parse(User.FindFirstValue("Id"));
+            var usuario = await _context.Usuarios.FindAsync(id);
+            if (usuario == null)
+            {
+                return NotFound();
+            }
             return View(usuario);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> CambiarPassword([Bind("Id,Password")] Usuario usuario, string passwordAnt)
+        {
+            try
+            {
+                var passwordAntData = CalcularHashMD5(passwordAnt);
+                var usuarioData = await _context.Usuarios.FirstOrDefaultAsync(s => s.Id == usuario.Id && s.Password == passwordAntData);
+               if(usuarioData!=null && usuarioData.Id > 0)
+                {
+                    usuarioData.Password = CalcularHashMD5(usuario.Password);
+                    _context.Update(usuarioData);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("Login", "Usuarios");
+                }
+               else
+                {
+                    ViewBag.Error = "El password anterior es incorrecto";
+                    int id = int.Parse(User.FindFirstValue("Id"));
+                    var usuarioReturn = await _context.Usuarios.FindAsync(id);
+                    return View(usuarioReturn);
+                }
+                   
+
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UsuarioExists(usuario.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+        [Authorize]
+        public async Task<IActionResult> Perfil()
+        {
+            int id=int.Parse(User.FindFirstValue("Id"));
+            var usuario = await _context.Usuarios.FindAsync(id);
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+            return View(usuario);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> Perfil([Bind("Id,Nombre,Apellido,Email,Rol,Estatus,Comentario")] Usuario usuario)
+        {           
+            try
+            {
+                var usuarioData = await _context.Usuarios.FirstOrDefaultAsync(s => s.Id == usuario.Id);
+                usuarioData.Nombre = usuario.Nombre;
+                usuarioData.Apellido = usuario.Apellido;
+                usuarioData.Email = usuario.Email;               
+                _context.Update(usuarioData);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UsuarioExists(usuario.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction("Index","Home");
         }
         [Authorize(Roles = "Administrador")]
         // GET: Usuarios/Delete/5
